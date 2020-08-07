@@ -1,0 +1,7 @@
+###> IDEs ###
+/.idea/
+###< IDEs ###
+
+###> vendor folder ###
+/vendor/
+###< vendor folder ###

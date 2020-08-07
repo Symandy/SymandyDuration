@@ -1,0 +1,32 @@
+{
+    "name": "symandy/php-duration",
+    "description": "PHP class for durations",
+    "type": "library",
+    "require": {
+        "php": "^7.4.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9.2",
+        "phpstan/phpstan": "^0.12.33"
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Samaël Villette"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Symandy\\Component\\Duration\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Symandy\\Component\\Duration\\Test\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "vendor\\bin\\phpunit tests",
+        "analyse": "vendor\\bin\\phpstan analyse -l 7 src tests"
+    }
+}
