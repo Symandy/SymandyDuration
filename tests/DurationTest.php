@@ -10,13 +10,6 @@ use Symandy\Component\Duration\DurationInterface;
 
 class DurationTest extends TestCase
 {
-    public function testDurationIsInitialized(): void
-    {
-        $duration = $this->initializeDuration();
-
-        self::assertInstanceOf(DurationInterface::class, $duration);
-    }
-
     public function testDurationCreation(): void
     {
         $goodSamples = array(

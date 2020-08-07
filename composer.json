@@ -7,7 +7,8 @@
     },
     "require-dev": {
         "phpunit/phpunit": "^9.2",
-        "phpstan/phpstan": "^0.12.33"
+        "phpstan/phpstan": "^0.12.33",
+        "vimeo/psalm": "^3.13"
     },
     "license": "MIT",
     "authors": [
@@ -27,6 +28,9 @@
     },
     "scripts": {
         "test": "phpunit tests",
-        "analyse": "phpstan analyse -l 7 src tests"
+        "analyse": [
+            "phpstan analyse -l 7 src tests",
+            "psalm"
+        ]
     }
 }
