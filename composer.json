@@ -30,7 +30,7 @@
         "test": "phpunit tests",
         "analyse": [
             "phpstan analyse -l 7 src tests",
-            "psalm"
+            "psalm --shepherd"
         ]
     }
 }
