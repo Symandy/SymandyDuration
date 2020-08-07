@@ -1,7 +1,8 @@
+[![Actions Status](https://github.com/Symandy/SymandyDuration/workflows/CI/badge.svg)](https://github.com/Symandy/SymandyDuration/actions)
+
 <h1 align="center">Symandy Duration</h1>
 
 <p align="center">PHP package to represent durations</p>
-
 
 Installation
 ------------
