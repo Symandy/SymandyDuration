@@ -1,5 +1,5 @@
 {
-    "name": "symandy/php-duration",
+    "name": "symandy/duration",
     "description": "PHP class for durations",
     "type": "library",
     "require": {
