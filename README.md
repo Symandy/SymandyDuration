@@ -1,4 +1,5 @@
 [![Actions Status](https://github.com/Symandy/SymandyDuration/workflows/CI/badge.svg)](https://github.com/Symandy/SymandyDuration/actions)
+[![Type Coverage](https://shepherd.dev/github/Symandy/SymandyDuration/coverage.svg)](https://shepherd.dev/github/Symandy/SymandyDuration)
 
 <h1 align="center">Symandy Duration</h1>
 
