@@ -6,6 +6,10 @@ namespace Symandy\Component\Duration;
 
 class Duration implements DurationInterface
 {
+    private const MAX_HOURS = 24;
+    private const MAX_MINUTES = 60;
+    private const MAX_SECONDS = 60;
+
     private int $days = 0;
 
     private int $hours = 0;
@@ -204,27 +208,22 @@ class Duration implements DurationInterface
     private function calculate(): void
     {
         $seconds = $this->getSeconds();
-        $maxSeconds = 60;
 
-        if (60 < $seconds) {
-            $this->addMinutes(intdiv($seconds, $maxSeconds));
-            $this->resetProperty('seconds', $seconds % $maxSeconds);
+        if (self::MAX_SECONDS < $seconds) {
+            $this->addMinutes(intdiv($seconds, self::MAX_SECONDS));
+            $this->resetProperty('seconds', $seconds % self::MAX_SECONDS);
         }
 
         $minutes = $this->getMinutes();
-        $maxMinutes = 60;
-
-        if (60 < $minutes) {
-            $this->addHours(intdiv($minutes, $maxMinutes));
-            $this->resetProperty('minutes', $minutes % $maxMinutes);
+        if (self::MAX_MINUTES < $minutes) {
+            $this->addHours(intdiv($minutes, self::MAX_MINUTES));
+            $this->resetProperty('minutes', $minutes % self::MAX_MINUTES);
         }
 
         $hours = $this->getHours();
-        $maxHours = 24;
-
-        if (24 < $hours) {
-            $this->addDays(intdiv($hours, $maxHours));
-            $this->resetProperty('hours', $hours % $maxHours);
+        if (self::MAX_HOURS < $hours) {
+            $this->addDays(intdiv($hours, self::MAX_HOURS));
+            $this->resetProperty('hours', $hours % self::MAX_HOURS);
         }
     }
 
