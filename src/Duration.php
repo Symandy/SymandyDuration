@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 namespace Symandy\Component\Duration;
 
+use InvalidArgumentException;
+
+use function preg_match;
+use function sprintf;
+
 class Duration implements DurationInterface
 {
     private const MAX_HOURS = 24;
@@ -136,10 +141,19 @@ class Duration implements DurationInterface
 
     public function create(string $duration): DurationInterface
     {
-        $this->parseRegex(self::SECONDS_REGEX, $duration, 'seconds');
-        $this->parseRegex(self::MINUTES_REGEX, $duration, 'minutes');
-        $this->parseRegex(self::HOURS_REGEX, $duration, 'hours');
-        $this->parseRegex(self::DAYS_REGEX, $duration, 'days');
+        $seconds = $this->parseRegex(self::SECONDS_REGEX, $duration, 'seconds');
+        $this->addSeconds($seconds);
+
+        $minutes = $this->parseRegex(self::MINUTES_REGEX, $duration, 'minutes');
+        $this->addMinutes($minutes);
+
+        $hours = $this->parseRegex(self::HOURS_REGEX, $duration, 'hours');
+        $this->addHours($hours);
+
+        $days = $this->parseRegex(self::DAYS_REGEX, $duration, 'days');
+        $this->addDays($days);
+
+        $this->calculate();
 
         return $this;
     }
@@ -188,16 +202,20 @@ class Duration implements DurationInterface
         return trim($formattedDuration);
     }
 
-    private function parseRegex(string $regex, string $duration, string $type): void
+    private function parseRegex(string $regex, string $duration, string $type): int
     {
-        if (preg_match($regex, $duration, $matches)) {
-            $methodName = sprintf('add%s', ucfirst($type));
+        $match = preg_match($regex, $duration, $matches);
 
-            if (method_exists($this, $methodName)) {
-                $this->$methodName((int) $matches['value']);
-                $this->calculate();
-            }
+        if (!$match || !isset($matches['value'])) {
+            throw new InvalidArgumentException(sprintf(
+                'Could not retrieve %s from duration "%s" with regex "%s"',
+                $type,
+                $duration,
+                $regex
+            ));
         }
+
+        return (int) $matches['value'];
     }
 
     private function calculate(): void
