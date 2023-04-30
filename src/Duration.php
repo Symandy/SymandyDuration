@@ -228,7 +228,7 @@ class Duration implements DurationInterface
         }
     }
 
-    private function resetType(string $type, ?int $value): void
+    private function resetType(string $type, int $value): void
     {
         $setMethodName = sprintf('set%s', ucfirst($type));
 
