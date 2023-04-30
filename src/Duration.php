@@ -208,7 +208,7 @@ class Duration implements DurationInterface
 
         if (60 < $seconds) {
             $this->addMinutes(intdiv($seconds, $maxSeconds));
-            $this->resetType('seconds', $seconds % $maxSeconds);
+            $this->resetProperty('seconds', $seconds % $maxSeconds);
         }
 
         $minutes = $this->getMinutes();
@@ -216,7 +216,7 @@ class Duration implements DurationInterface
 
         if (60 < $minutes) {
             $this->addHours(intdiv($minutes, $maxMinutes));
-            $this->resetType('minutes', $minutes % $maxMinutes);
+            $this->resetProperty('minutes', $minutes % $maxMinutes);
         }
 
         $hours = $this->getHours();
@@ -224,19 +224,19 @@ class Duration implements DurationInterface
 
         if (24 < $hours) {
             $this->addDays(intdiv($hours, $maxHours));
-            $this->resetType('hours', $hours % $maxHours);
+            $this->resetProperty('hours', $hours % $maxHours);
         }
     }
 
-    private function resetType(string $type, int $value): void
+    private function resetProperty(string $property, int $value): void
     {
-        $setMethodName = sprintf('set%s', ucfirst($type));
+        $setMethodName = sprintf('set%s', ucfirst($property));
 
         if (method_exists($this, $setMethodName)) {
             $this->$setMethodName(0);
         }
 
-        $addMethodName = sprintf('add%s', ucfirst($type));
+        $addMethodName = sprintf('add%s', ucfirst($property));
 
         if (method_exists($this ,$addMethodName)) {
             $this->$addMethodName($value);
