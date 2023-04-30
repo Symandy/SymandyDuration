@@ -4,8 +4,23 @@ declare(strict_types=1);
 
 namespace Symandy\Component\Duration;
 
+use InvalidArgumentException;
+
+use function intdiv;
+use function preg_match;
+use function sprintf;
+
 class Duration implements DurationInterface
 {
+    private const MAX_HOURS = 24;
+    private const MAX_MINUTES = 60;
+    private const MAX_SECONDS = 60;
+
+    private const DAYS_REGEX = '/(?<value>[0-9]+)\s*[dD]/';
+    private const HOURS_REGEX = '/(?<value>[0-9]+)\s*[hH]/';
+    private const MINUTES_REGEX = '/(?<value>[0-9]+)\s*[mM]/';
+    private const SECONDS_REGEX = '/(?<value>[0-9]+)\s*[sS]/';
+
     private int $days = 0;
 
     private int $hours = 0;
@@ -35,16 +50,12 @@ class Duration implements DurationInterface
 
     public function addDays(int $days): DurationInterface
     {
-        $this->days += $days;
-
-        return $this;
+        return $this->setDays($this->days + $days);
     }
 
     public function subDays(int $days): DurationInterface
     {
-        $this->days -= $days;
-
-        return $this;
+        return $this->setDays($this->days - $days);
     }
 
     public function getHours(): int
@@ -54,6 +65,13 @@ class Duration implements DurationInterface
 
     public function setHours(int $hours): DurationInterface
     {
+        if (self::MAX_HOURS < $hours) {
+            $this->addDays(intdiv($hours, self::MAX_HOURS));
+            $this->hours = $hours % self::MAX_HOURS;
+
+            return $this;
+        }
+
         $this->hours = $hours;
 
         return $this;
@@ -61,16 +79,13 @@ class Duration implements DurationInterface
 
     public function addHours(int $hours): DurationInterface
     {
-        $this->hours += $hours;
-
-        return $this;
+        return $this->setHours($this->hours + $hours);
     }
 
     public function subHours(int $hours): DurationInterface
     {
-        $this->hours -= $hours;
+        return $this->setHours($this->hours - $hours);
 
-        return $this;
     }
 
     public function getMinutes(): int
@@ -80,6 +95,13 @@ class Duration implements DurationInterface
 
     public function setMinutes(int $minutes): DurationInterface
     {
+        if (self::MAX_MINUTES < $minutes) {
+            $this->addHours(intdiv($minutes, self::MAX_MINUTES));
+            $this->minutes = $minutes % self::MAX_MINUTES;
+
+            return $this;
+        }
+
         $this->minutes = $minutes;
 
         return $this;
@@ -87,16 +109,12 @@ class Duration implements DurationInterface
 
     public function addMinutes(int $minutes): DurationInterface
     {
-        $this->minutes += $minutes;
-
-        return $this;
+        return $this->setMinutes($this->minutes + $minutes);
     }
 
     public function subMinutes(int $minutes): DurationInterface
     {
-        $this->minutes -= $minutes;
-
-        return $this;
+        return $this->setMinutes($this->minutes - $minutes);
     }
 
     public function getSeconds(): int
@@ -106,6 +124,13 @@ class Duration implements DurationInterface
 
     public function setSeconds(int $seconds): DurationInterface
     {
+        if (self::MAX_SECONDS < $seconds) {
+            $this->addMinutes(intdiv($seconds, self::MAX_SECONDS));
+            $this->seconds = $seconds % self::MAX_SECONDS;
+
+            return $this;
+        }
+
         $this->seconds = $seconds;
 
         return $this;
@@ -113,21 +138,27 @@ class Duration implements DurationInterface
 
     public function addSeconds(int $seconds): DurationInterface
     {
-        $this->seconds += $seconds;
-
-        return $this;
+        return $this->setSeconds($this->seconds + $seconds);
     }
 
     public function subSeconds(int $seconds): DurationInterface
     {
-        $this->seconds -= $seconds;
-
-        return $this;
+        return $this->setSeconds($this->seconds - $seconds);
     }
 
     public function create(string $duration): DurationInterface
     {
-        $this->parse($duration);
+        $seconds = $this->parseRegex(self::SECONDS_REGEX, $duration, 'seconds');
+        $this->addSeconds($seconds);
+
+        $minutes = $this->parseRegex(self::MINUTES_REGEX, $duration, 'minutes');
+        $this->addMinutes($minutes);
+
+        $hours = $this->parseRegex(self::HOURS_REGEX, $duration, 'hours');
+        $this->addHours($hours);
+
+        $days = $this->parseRegex(self::DAYS_REGEX, $duration, 'days');
+        $this->addDays($days);
 
         return $this;
     }
@@ -176,70 +207,19 @@ class Duration implements DurationInterface
         return trim($formattedDuration);
     }
 
-    private function parse(string $duration): void
+    private function parseRegex(string $regex, string $duration, string $type): int
     {
-        $daysRegex = '/([0-9]+)\s*(?:d|D)/';
-        $hoursRegex = '/([0-9]+)\s*(?:h|H)/';
-        $minutesRegex = '/([0-9]+)\s*(?:m|M)/';
-        $secondsRegex = '/([0-9]+)\s*(?:s|S)/';
+        $match = preg_match($regex, $duration, $matches);
 
-        $this->parseRegex($secondsRegex, $duration, 'seconds');
-        $this->parseRegex($minutesRegex, $duration, 'minutes');
-        $this->parseRegex($hoursRegex, $duration, 'hours');
-        $this->parseRegex($daysRegex, $duration, 'days');
-    }
-
-    private function parseRegex(string $regex, string $duration, string $type): void
-    {
-        if (preg_match($regex, $duration, $matches)) {
-            $methodName = sprintf('add%s', ucfirst($type));
-
-            if (method_exists($this, $methodName)) {
-                $this->$methodName((int) $matches[1]);
-                $this->calculate();
-            }
-        }
-    }
-
-    private function calculate(): void
-    {
-        $seconds = $this->getSeconds();
-        $maxSeconds = 60;
-
-        if (60 < $seconds) {
-            $this->addMinutes(intdiv($seconds, $maxSeconds));
-            $this->resetType('seconds', $seconds % $maxSeconds);
+        if (!$match || !isset($matches['value'])) {
+            throw new InvalidArgumentException(sprintf(
+                'Could not retrieve %s from duration "%s" with regex "%s"',
+                $type,
+                $duration,
+                $regex
+            ));
         }
 
-        $minutes = $this->getMinutes();
-        $maxMinutes = 60;
-
-        if (60 < $minutes) {
-            $this->addHours(intdiv($minutes, $maxMinutes));
-            $this->resetType('minutes', $minutes % $maxMinutes);
-        }
-
-        $hours = $this->getHours();
-        $maxHours = 24;
-
-        if (24 < $hours) {
-            $this->addDays(intdiv($hours, $maxHours));
-            $this->resetType('hours', $hours % $maxHours);
-        }
-    }
-
-    private function resetType(string $type, int $value): void
-    {
-        $setMethodName = sprintf('set%s', ucfirst($type));
-
-        if (method_exists($this, $setMethodName)) {
-            $this->$setMethodName(0);
-        }
-
-        $addMethodName = sprintf('add%s', ucfirst($type));
-
-        if (method_exists($this ,$addMethodName)) {
-            $this->$addMethodName($value);
-        }
+        return (int) $matches['value'];
     }
 }
