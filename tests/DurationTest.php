@@ -8,220 +8,171 @@ use PHPUnit\Framework\TestCase;
 use Symandy\Component\Duration\Duration;
 use Symandy\Component\Duration\DurationInterface;
 
-class DurationTest extends TestCase
+use function count;
+use function random_int;
+
+/**
+ * @covers \Symandy\Component\Duration\Duration
+ */
+final class DurationTest extends TestCase
 {
-    public function testDurationCreation(): void
+    /**
+     * @dataProvider provideCreateCases
+     */
+    public function testCreate(DurationInterface $expected, int $days, int $hours, int $minutes, int $seconds): void
     {
-        $goodSamples = array(
-            array(0, 0, 0, 0),
-            array(0, 0, 0, 5),
-            array(0, 0, 0, 10),
-            array(0, 0, 5, 0),
-            array(0, 0, 10, 0),
-            array(0, 5, 0, 0),
-            array(0, 10, 0, 0),
-            array(5, 0, 0, 0),
-            array(10, 0, 0, 0),
-            array(10, 10, 10, 10),
-            array(0, 19, 59, 00)
-        );
+        $duration = $this->createDuration($days, $hours, $minutes, $seconds);
 
-        $badSamples = array(
-            array(0, 0, 0, 70),
-            array(0, 0, 0, 150),
-            array(0, 0, 70, 0),
-            array(0, 0, 150, 0),
-            array(0, 0, 150, 70),
-            array(0, 90, 0, 0),
-            array(0, 90, 150, 0),
-            array(0, 90, 150, 150),
-            array(0, 0, 0, 3600),
-            array(0, 24, 3600, 3600),
-            array(40, 400, 40000, 40000)
-        );
-
-        foreach (array_merge($goodSamples, $badSamples) as $sample) {
-            $this->assertDurationIsCreated($sample[0], $sample[1], $sample[2], $sample[3]);
-        }
-    }
-
-    public function testDurationFormat(): void
-    {
-        $samples = array(
-            array(0, 0, 0, 0),
-            array(0, 0, 4, 0),
-            array(0, 4, 0, 0),
-            array(4, 0, 0, 0),
-        );
-
-        $formats = array(
-            1 => DurationInterface::FORMAT_DEFAULT,
-            2 => DurationInterface::FORMAT_SIMPLE,
-            3 => '%dd %hh %mm %ss',
-            4 => '%d days %h hours %m minutes %s seconds'
-        );
-
-        foreach ($samples as $sample) {
-            $duration = $this->initializeDurationByValues($sample[0], $sample[1], $sample[2], $sample[3]);
-
-            foreach ($formats as $key => $format) {
-                $formattedDuration = $duration->format($format);
-
-                switch ($key) {
-                    default:
-                    case 1:
-                        $expectedDuration = '';
-                        $data = array(
-                            'd' => $duration->getDays(),
-                            'h' => $duration->getHours(),
-                            'm' => $duration->getMinutes(),
-                            's' => $duration->getSeconds()
-                        );
-
-                        foreach ($data as $unit => $value) {
-                            if (0 < $value) {
-                                $expectedDuration .= $value . $unit . ' ';
-                            }
-                        }
-
-                        $expectedDuration = trim($expectedDuration);
-                        break;
-
-                    case 2:
-                        $expectedDuration = trim(
-                            $duration->getHours() . ':' .
-                            $duration->getMinutes() . ':' .
-                            $duration->getSeconds()
-                        );
-                        break;
-
-                    case 3:
-                        $expectedDuration = trim(
-                            $duration->getDays() . 'd ' .
-                            $duration->getHours() . 'h ' .
-                            $duration->getMinutes() . 'm ' .
-                            $duration->getSeconds() . 's'
-                        );
-                        break;
-
-                    case 4:
-                        $expectedDuration = trim(
-                            $duration->getDays() . ' days ' .
-                            $duration->getHours() . ' hours ' .
-                            $duration->getMinutes() . ' minutes ' .
-                            $duration->getSeconds() . ' seconds'
-                        );
-                        break;
-                }
-
-                self::assertEquals($expectedDuration, $formattedDuration);
-            }
-        }
+        self::assertEquals($expected, $duration);
     }
 
     /**
-     * @param string|null $duration
-     * @return DurationInterface
+     * @dataProvider provideFormatCases
      */
-    private function initializeDuration(?string $duration = null): DurationInterface
+    public function testFormat(string $expected, string $format, int $days, int $hours, int $minutes, int $seconds): void
     {
-        return new Duration($duration);
+        $duration = $this->createDuration($days, $hours, $minutes, $seconds);
+
+        self::assertSame($expected, $duration->format($format));
     }
 
     /**
-     * @param int|null $days
-     * @param int|null $hours
-     * @param int|null $minutes
-     * @param int|null $seconds
-     * @return DurationInterface
+     * @return iterable<string, array{0: DurationInterface, 1: int, 2: int, 3: int, 4: int}>
      */
-    private function initializeDurationByValues(?int $days, ?int $hours, ?int $minutes, ?int $seconds): DurationInterface
+    public static function provideCreateCases(): iterable
     {
-        $daysSample = array('days', 'd', 'Days', 'daYs', 'DAYS');
-        $hoursSample = array('hours', 'h', 'Hours', 'HOURS', 'hOURS');
-        $minutesSample = array('minutes', 'm', 'Minutes', 'MINUTES');
-        $secondsSample = array('seconds', 's', 'Seconds', 'SECONDS');
+        // Normal cases
+        $duration = new Duration('0 days 0 hours 0 minutes 0 seconds');
+        yield '0_0_0_0' => [$duration, 0, 0, 0, 0];
 
-        $regex = $this->addToRegex(null, $days, $daysSample);
-        $regex = $this->addToRegex($regex, $hours, $hoursSample);
-        $regex = $this->addToRegex($regex, $minutes, $minutesSample);
-        $regex = $this->addToRegex($regex, $seconds, $secondsSample);
+        $duration = new Duration('0 days 0 hours 0 minutes 5 seconds');
+        yield '0_0_0_5' => [$duration, 0, 0, 0, 5];
 
-        return $this->initializeDuration($regex);
+        $duration = new Duration('0 days 0 hours 0 minutes 10 seconds');
+        yield '0_0_0_10' => [$duration, 0, 0, 0, 10];
+
+        $duration = new Duration('0 days 0 hours 5 minutes 0 seconds');
+        yield '0_0_5_0' => [$duration, 0, 0, 5, 0];
+
+        $duration = new Duration('0 days 0 hours 10 minutes 0 seconds');
+        yield '0_0_10_0' => [$duration, 0, 0, 10, 0];
+
+        $duration = new Duration('0 days 5 hours 0 minutes 0 seconds');
+        yield '0_5_0_0' => [$duration, 0, 5, 0, 0];
+
+        $duration = new Duration('0 days 10 hours 0 minutes 0 seconds');
+        yield '0_10_0_0' => [$duration, 0, 10, 0, 0];
+
+        $duration = new Duration('5 days 0 hours 0 minutes 0 seconds');
+        yield '5_0_0_0' => [$duration, 5, 0, 0, 0];
+
+        $duration = new Duration('10 days 0 hours 0 minutes 0 seconds');
+        yield '10_0_0_0' => [$duration, 10, 0, 0, 0];
+
+        $duration = new Duration('10 days 10 hours 10 minutes 10 seconds');
+        yield '10_10_10_10' => [$duration, 10, 10, 10, 10];
+
+        $duration = new Duration('0 days 19 hours 59 minutes 0 seconds');
+        yield '0_19_59_0' => [$duration, 0, 19, 59, 0];
+
+        // Wrong format cases
+        $duration = new Duration('0 days 0 hours 1 minute 10 seconds');
+        yield '0_0_0_70' => [$duration, 0, 0, 0, 70];
+
+        $duration = new Duration('0 days 0 hours 2 minutes 30 seconds');
+        yield '0_0_0_150' => [$duration, 0, 0, 0, 150];
+
+        $duration = new Duration('0 days 1 hours 10 minute 0 seconds');
+        yield '0_0_70_0' => [$duration, 0, 0, 70, 0];
+
+        $duration = new Duration('0 days 2 hours 30 minutes 0 seconds');
+        yield '0_0_150_0' => [$duration, 0, 0, 150, 0];
+
+        $duration = new Duration('0 days 2 hours 31 minutes 10 seconds');
+        yield '0_0_150_70' => [$duration, 0, 0, 150, 70];
+
+        $duration = new Duration('3 days 18 hours 0 minutes 0 seconds');
+        yield '0_90_0_0' => [$duration, 0, 90, 0, 0];
+
+        $duration = new Duration('3 days 20 hours 30 minutes 00 seconds');
+        yield '0_90_150_0' => [$duration, 0, 90, 150, 0];
+
+        $duration = new Duration('3 days 20 hours 32 minutes 30 seconds');
+        yield '0_90_150_150' => [$duration, 0, 90, 150, 150];
+
+        $duration = new Duration('0 days 0 hours 60 minutes 0 seconds');
+        yield '0_0_0_3600' => [$duration, 0, 0, 0, 3600];
+
+        $duration = new Duration('3 days 13 hours 0 minutes 0 seconds');
+        yield '0_24_3600_3600' => [$duration, 0, 24, 3600, 3600];
+
+        $duration = new Duration('84 days 21 hours 46 minutes 40 seconds');
+        yield '40_400_40000_40000' => [$duration, 40, 400, 40000, 40000];
     }
 
     /**
-     * @param int $days
-     * @param int $hours
-     * @param int $minutes
-     * @param int $seconds
+     * @return iterable<string, array{0: string, 1: string, 2: int, 3: int, 4: int, 5: int}>
      */
-    private function assertDurationIsCreated(int $days, int $hours, int $minutes, int $seconds): void
+    public static function provideFormatCases(): iterable
     {
-        $duration = $this->initializeDurationByValues($days, $hours, $minutes, $seconds);
+        yield 'default_0_0_0_0' => ['', DurationInterface::FORMAT_DEFAULT, 0, 0, 0, 0];
+        yield 'simple_0_0_0_0' => ['0:0:0', DurationInterface::FORMAT_SIMPLE, 0, 0, 0, 0];
+        yield '0d_0h_0m_0s' => ['0d 0h 0m 0s', '%dd %hh %mm %ss', 0, 0, 0, 0];
+        yield '0days_0hours_0minutes_0seconds' => [
+            '0 days 0 hours 0 minutes 0 seconds',
+            '%d days %h hours %m minutes %s seconds',
+            0, 0, 0, 0
+        ];
 
-        $expectedDuration = array(
-            'days' => $days,
-            'hours' => $hours,
-            'minutes' => $minutes,
-            'seconds' => $seconds
+        yield 'default_0_0_0_4' => ['4s', DurationInterface::FORMAT_DEFAULT, 0, 0, 0, 4];
+        yield 'simple_0_0_0_4' => ['0:0:4', DurationInterface::FORMAT_SIMPLE, 0, 0, 0, 4];
+        yield '0d_0h_0m_4s' => ['0d 0h 0m 4s', '%dd %hh %mm %ss', 0, 0, 0, 4];
+        yield '0days_0hours_0minutes_4seconds' => [
+            '0 days 0 hours 0 minutes 4 seconds',
+            '%d days %h hours %m minutes %s seconds',
+            0, 0, 0, 4
+        ];
+
+        yield 'default_0_0_4_0' => ['4m', DurationInterface::FORMAT_DEFAULT, 0, 0, 4, 0];
+        yield 'simple_0_0_4_0' => ['0:4:0', DurationInterface::FORMAT_SIMPLE, 0, 0, 4, 0];
+        yield '0d_0h_4m_0s' => ['0d 0h 4m 0s', '%dd %hh %mm %ss', 0, 0, 4, 0];
+        yield '0days_0hours_4minutes_0seconds' => [
+            '0 days 0 hours 4 minutes 0 seconds',
+            '%d days %h hours %m minutes %s seconds',
+            0, 0, 4, 0
+        ];
+
+        yield 'default_0_4_0_0' => ['4h', DurationInterface::FORMAT_DEFAULT, 0, 4, 0, 0];
+        yield 'simple_0_4_0_0' => ['4:0:0', DurationInterface::FORMAT_SIMPLE, 0, 4, 0, 0];
+        yield '0d_4h_0m_0s' => ['0d 4h 0m 0s', '%dd %hh %mm %ss', 0, 4, 0, 0];
+        yield '0days_4hours_0minutes_0seconds' => [
+            '0 days 4 hours 0 minutes 0 seconds',
+            '%d days %h hours %m minutes %s seconds',
+            0, 4, 0, 0
+        ];
+
+        yield 'default_4_0_0_0' => ['4d', DurationInterface::FORMAT_DEFAULT, 4, 0, 0, 0];
+        yield 'simple_4_0_0_0' => ['0:0:0', DurationInterface::FORMAT_SIMPLE, 4, 0, 0, 0];
+        yield '4d_0h_0m_0s' => ['4d 0h 0m 0s', '%dd %hh %mm %ss', 4, 0, 0, 0];
+        yield '4days_0hours_0minutes_0seconds' => [
+            '4 days 0 hours 0 minutes 0 seconds',
+            '%d days %h hours %m minutes %s seconds',
+            4, 0, 0, 0
+        ];
+    }
+
+    private function createDuration(int $days, int $hours, int $minutes, int $seconds): DurationInterface
+    {
+        $daysSample = ['days', 'd', 'Days', 'daYs', 'DAYS'];
+        $hoursSample = ['hours', 'h', 'Hours', 'HOURS', 'hOURS'];
+        $minutesSample = ['minutes', 'm', 'Minutes', 'MINUTES'];
+        $secondsSample = ['seconds', 's', 'Seconds', 'SECONDS'];
+
+        return new Duration(
+            $days . ' ' . $daysSample[random_int(0, count($daysSample) - 1)] .
+            $hours . ' ' . $hoursSample[random_int(0, count($hoursSample) - 1)] .
+            $minutes . ' ' . $minutesSample[random_int(0, count($minutesSample) - 1)] .
+            $seconds . ' ' . $secondsSample[random_int(0, count($secondsSample) - 1)]
         );
-
-        $expectedDuration = $this->calculateExpectedDuration($expectedDuration);
-
-        self::assertEquals($expectedDuration['days'], $duration->getDays());
-        self::assertEquals($expectedDuration['hours'], $duration->getHours());
-        self::assertEquals($expectedDuration['minutes'], $duration->getMinutes());
-        self::assertEquals($expectedDuration['seconds'], $duration->getSeconds());
-    }
-
-    /**
-     * @param array<string, int|null> $duration
-     * @return array<string, int|null>
-     */
-    private function calculateExpectedDuration(array $duration): array
-    {
-        $seconds = $duration['seconds'];
-        $maxSeconds = 60;
-
-        if ($maxSeconds < $seconds) {
-            $duration['minutes'] += intdiv($seconds, $maxSeconds);
-            $duration['seconds'] = $seconds % $maxSeconds;
-        }
-
-        $minutes = $duration['minutes'];
-        $maxMinutes = 60;
-
-        if ($maxMinutes < $minutes) {
-            $duration['hours'] += intdiv($minutes, $maxMinutes);
-            $duration['minutes'] = $minutes % $maxMinutes;
-        }
-
-        $hours = $duration['hours'];
-        $maxHours = 24;
-
-        if ($maxHours < $hours) {
-            $duration['days'] += intdiv($hours, $maxHours);
-            $duration['hours'] = $hours % $maxHours;
-        }
-
-        return $duration;
-    }
-
-    /**
-     * @param string|null $regex
-     * @param int|null $number
-     * @param array<string> $wordsSample
-     * @return string
-     */
-    private function addToRegex(?string $regex, ?int $number, array $wordsSample): string
-    {
-        $regex = null === $regex ? '' : $regex . ' ';
-
-        if (null !== $number) {
-            $regex .= $number . ' ' . $wordsSample[rand(0, count($wordsSample) - 1)];
-        }
-
-        return trim($regex);
     }
 }
