@@ -49,16 +49,12 @@ class Duration implements DurationInterface
 
     public function addDays(int $days): DurationInterface
     {
-        $this->days += $days;
-
-        return $this;
+        return $this->setDays($this->days + $days);
     }
 
     public function subDays(int $days): DurationInterface
     {
-        $this->days -= $days;
-
-        return $this;
+        return $this->setDays($this->days - $days);
     }
 
     public function getHours(): int
@@ -75,16 +71,13 @@ class Duration implements DurationInterface
 
     public function addHours(int $hours): DurationInterface
     {
-        $this->hours += $hours;
-
-        return $this;
+        return $this->setHours($this->hours + $hours);
     }
 
     public function subHours(int $hours): DurationInterface
     {
-        $this->hours -= $hours;
+        return $this->setHours($this->hours - $hours);
 
-        return $this;
     }
 
     public function getMinutes(): int
@@ -101,16 +94,12 @@ class Duration implements DurationInterface
 
     public function addMinutes(int $minutes): DurationInterface
     {
-        $this->minutes += $minutes;
-
-        return $this;
+        return $this->setMinutes($this->minutes + $minutes);
     }
 
     public function subMinutes(int $minutes): DurationInterface
     {
-        $this->minutes -= $minutes;
-
-        return $this;
+        return $this->setMinutes($this->minutes - $minutes);
     }
 
     public function getSeconds(): int
@@ -127,16 +116,12 @@ class Duration implements DurationInterface
 
     public function addSeconds(int $seconds): DurationInterface
     {
-        $this->seconds += $seconds;
-
-        return $this;
+        return $this->setSeconds($this->seconds + $seconds);
     }
 
     public function subSeconds(int $seconds): DurationInterface
     {
-        $this->seconds -= $seconds;
-
-        return $this;
+        return $this->setSeconds($this->seconds - $seconds);
     }
 
     public function create(string $duration): DurationInterface
