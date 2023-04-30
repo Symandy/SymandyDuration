@@ -132,7 +132,7 @@ class Duration implements DurationInterface
         return $this;
     }
 
-    public function format(string $format = self::FORMAT_DEFAULT): ?string
+    public function format(string $format = self::FORMAT_DEFAULT): string
     {
         if (self::FORMAT_DEFAULT === $format) {
             return $this->formatDefault();
@@ -154,7 +154,7 @@ class Duration implements DurationInterface
             $duration = preg_replace('/%s/', (string) $this->getSeconds(), $duration);
         }
 
-        return $duration;
+        return $duration ?? '';
     }
 
     private function formatDefault(): string

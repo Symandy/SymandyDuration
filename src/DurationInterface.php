@@ -43,5 +43,5 @@ interface DurationInterface
 
     public function create(string $duration): self;
 
-    public function format(string $format = self::FORMAT_DEFAULT): ?string;
+    public function format(string $format = self::FORMAT_DEFAULT): string;
 }
