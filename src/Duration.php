@@ -10,6 +10,11 @@ class Duration implements DurationInterface
     private const MAX_MINUTES = 60;
     private const MAX_SECONDS = 60;
 
+    private const DAYS_REGEX = '/(?<value>[0-9]+)\s*[dD]/';
+    private const HOURS_REGEX = '/(?<value>[0-9]+)\s*[hH]/';
+    private const MINUTES_REGEX = '/(?<value>[0-9]+)\s*[mM]/';
+    private const SECONDS_REGEX = '/(?<value>[0-9]+)\s*[sS]/';
+
     private int $days = 0;
 
     private int $hours = 0;
@@ -131,7 +136,10 @@ class Duration implements DurationInterface
 
     public function create(string $duration): DurationInterface
     {
-        $this->parse($duration);
+        $this->parseRegex(self::SECONDS_REGEX, $duration, 'seconds');
+        $this->parseRegex(self::MINUTES_REGEX, $duration, 'minutes');
+        $this->parseRegex(self::HOURS_REGEX, $duration, 'hours');
+        $this->parseRegex(self::DAYS_REGEX, $duration, 'days');
 
         return $this;
     }
@@ -180,26 +188,13 @@ class Duration implements DurationInterface
         return trim($formattedDuration);
     }
 
-    private function parse(string $duration): void
-    {
-        $daysRegex = '/([0-9]+)\s*(?:d|D)/';
-        $hoursRegex = '/([0-9]+)\s*(?:h|H)/';
-        $minutesRegex = '/([0-9]+)\s*(?:m|M)/';
-        $secondsRegex = '/([0-9]+)\s*(?:s|S)/';
-
-        $this->parseRegex($secondsRegex, $duration, 'seconds');
-        $this->parseRegex($minutesRegex, $duration, 'minutes');
-        $this->parseRegex($hoursRegex, $duration, 'hours');
-        $this->parseRegex($daysRegex, $duration, 'days');
-    }
-
     private function parseRegex(string $regex, string $duration, string $type): void
     {
         if (preg_match($regex, $duration, $matches)) {
             $methodName = sprintf('add%s', ucfirst($type));
 
             if (method_exists($this, $methodName)) {
-                $this->$methodName((int) $matches[1]);
+                $this->$methodName((int) $matches['value']);
                 $this->calculate();
             }
         }
