@@ -29,7 +29,7 @@
     "scripts": {
         "test": "phpunit tests --colors",
         "analyse": [
-            "phpstan analyse -l 7 src tests",
+            "phpstan analyse -l 9 src tests",
             "psalm --shepherd"
         ]
     }

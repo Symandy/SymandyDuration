@@ -9,107 +9,39 @@ interface DurationInterface
     public const FORMAT_DEFAULT = 'default';
     public const FORMAT_SIMPLE = '%h:%m:%s';
 
-    /**
-     * @return int|null
-     */
-    public function getDays(): ?int;
+    public function getDays(): int;
 
-    /**
-     * @param int|null $days
-     * @return $this
-     */
-    public function setDays(?int $days): self;
+    public function setDays(int $days): self;
 
-    /**
-     * @param int|null $days
-     * @return $this
-     */
-    public function addDays(?int $days): self;
+    public function addDays(int $days): self;
 
-    /**
-     * @param int|null $days
-     * @return $this
-     */
-    public function subDays(?int $days): self;
+    public function subDays(int $days): self;
 
-    /**
-     * @return int|null
-     */
-    public function getHours(): ?int;
+    public function getHours(): int;
 
-    /**
-     * @param int|null $hours
-     * @return $this
-     */
-    public function setHours(?int $hours): self;
+    public function setHours(int $hours): self;
 
-    /**
-     * @param int|null $hours
-     * @return $this
-     */
-    public function addHours(?int $hours): self;
+    public function addHours(int $hours): self;
 
-    /**
-     * @param int|null $hours
-     * @return $this
-     */
-    public function subHours(?int $hours): self;
+    public function subHours(int $hours): self;
 
-    /**
-     * @return int|null
-     */
-    public function getMinutes(): ?int;
+    public function getMinutes(): int;
 
-    /**
-     * @param int|null $minutes
-     * @return $this
-     */
-    public function setMinutes(?int $minutes): self;
+    public function setMinutes(int $minutes): self;
 
-    /**
-     * @param int|null $minutes
-     * @return $this
-     */
-    public function addMinutes(?int $minutes): self;
+    public function addMinutes(int $minutes): self;
 
-    /**
-     * @param int|null $minutes
-     * @return $this
-     */
-    public function subMinutes(?int $minutes): self;
+    public function subMinutes(int $minutes): self;
 
-    /**
-     * @return int|null
-     */
-    public function getSeconds(): ?int;
+    public function getSeconds(): int;
 
-    /**
-     * @param int|null $seconds
-     * @return $this
-     */
-    public function setSeconds(?int $seconds): self;
+    public function setSeconds(int $seconds): self;
 
-    /**
-     * @param int|null $seconds
-     * @return $this
-     */
-    public function addSeconds(?int $seconds): self;
+    public function addSeconds(int $seconds): self;
 
-    /**
-     * @param int|null $seconds
-     * @return $this
-     */
-    public function subSeconds(?int $seconds): self;
+    public function subSeconds(int $seconds): self;
 
-    /**
-     * @param string|null $duration
-     * @return static
-     */
-    public function create(?string $duration): self;
+    public function create(string $duration): self;
 
-    /**
-     * @param string $format
-     * @return string|null
-     */
-    public function format(string $format = self::FORMAT_DEFAULT): ?string;
+    public function format(string $format = self::FORMAT_DEFAULT): string;
 }
