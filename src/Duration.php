@@ -6,6 +6,7 @@ namespace Symandy\Component\Duration;
 
 use InvalidArgumentException;
 
+use function intdiv;
 use function preg_match;
 use function sprintf;
 
@@ -64,6 +65,13 @@ class Duration implements DurationInterface
 
     public function setHours(int $hours): DurationInterface
     {
+        if (self::MAX_HOURS < $hours) {
+            $this->addDays(intdiv($hours, self::MAX_HOURS));
+            $this->hours = $hours % self::MAX_HOURS;
+
+            return $this;
+        }
+
         $this->hours = $hours;
 
         return $this;
@@ -87,6 +95,13 @@ class Duration implements DurationInterface
 
     public function setMinutes(int $minutes): DurationInterface
     {
+        if (self::MAX_MINUTES < $minutes) {
+            $this->addHours(intdiv($minutes, self::MAX_MINUTES));
+            $this->minutes = $minutes % self::MAX_MINUTES;
+
+            return $this;
+        }
+
         $this->minutes = $minutes;
 
         return $this;
@@ -109,6 +124,13 @@ class Duration implements DurationInterface
 
     public function setSeconds(int $seconds): DurationInterface
     {
+        if (self::MAX_SECONDS < $seconds) {
+            $this->addMinutes(intdiv($seconds, self::MAX_SECONDS));
+            $this->seconds = $seconds % self::MAX_SECONDS;
+
+            return $this;
+        }
+
         $this->seconds = $seconds;
 
         return $this;
@@ -137,8 +159,6 @@ class Duration implements DurationInterface
 
         $days = $this->parseRegex(self::DAYS_REGEX, $duration, 'days');
         $this->addDays($days);
-
-        $this->calculate();
 
         return $this;
     }
@@ -201,27 +221,5 @@ class Duration implements DurationInterface
         }
 
         return (int) $matches['value'];
-    }
-
-    private function calculate(): void
-    {
-        $seconds = $this->getSeconds();
-
-        if (self::MAX_SECONDS < $seconds) {
-            $this->addMinutes(intdiv($seconds, self::MAX_SECONDS));
-            $this->setSeconds($seconds % self::MAX_SECONDS);
-        }
-
-        $minutes = $this->getMinutes();
-        if (self::MAX_MINUTES < $minutes) {
-            $this->addHours(intdiv($minutes, self::MAX_MINUTES));
-            $this->setMinutes($minutes % self::MAX_MINUTES);
-        }
-
-        $hours = $this->getHours();
-        if (self::MAX_HOURS < $hours) {
-            $this->addDays(intdiv($hours, self::MAX_HOURS));
-            $this->setHours($hours % self::MAX_HOURS);
-        }
     }
 }
