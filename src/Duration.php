@@ -211,34 +211,19 @@ class Duration implements DurationInterface
 
         if (self::MAX_SECONDS < $seconds) {
             $this->addMinutes(intdiv($seconds, self::MAX_SECONDS));
-            $this->resetProperty('seconds', $seconds % self::MAX_SECONDS);
+            $this->setSeconds($seconds % self::MAX_SECONDS);
         }
 
         $minutes = $this->getMinutes();
         if (self::MAX_MINUTES < $minutes) {
             $this->addHours(intdiv($minutes, self::MAX_MINUTES));
-            $this->resetProperty('minutes', $minutes % self::MAX_MINUTES);
+            $this->setMinutes($minutes % self::MAX_MINUTES);
         }
 
         $hours = $this->getHours();
         if (self::MAX_HOURS < $hours) {
             $this->addDays(intdiv($hours, self::MAX_HOURS));
-            $this->resetProperty('hours', $hours % self::MAX_HOURS);
-        }
-    }
-
-    private function resetProperty(string $property, int $value): void
-    {
-        $setMethodName = sprintf('set%s', ucfirst($property));
-
-        if (method_exists($this, $setMethodName)) {
-            $this->$setMethodName(0);
-        }
-
-        $addMethodName = sprintf('add%s', ucfirst($property));
-
-        if (method_exists($this ,$addMethodName)) {
-            $this->$addMethodName($value);
+            $this->setHours($hours % self::MAX_HOURS);
         }
     }
 }
